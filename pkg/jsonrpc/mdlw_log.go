@@ -27,7 +27,7 @@ func LogMiddleware(opts *LogOptions) func(handler Handler) Handler {
 
 			logger := opts.Logger.
 				WithField("method", req.Method).
-				WithField("duration", time.Since(start))
+				WithField("duration", time.Since(start).String())
 
 			if opts.IncludeBody {
 				logger = logger.WithField("params", req.Params)

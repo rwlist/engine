@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/rwlist/engine/pkg/rwserv"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -28,9 +29,17 @@ func main() {
 		}
 	}()
 
-	var handler jsonrpc.Handler
-	// TODO: init handler
+	srv := &rwserv.Server{}
 
+	middlewares := []jsonrpc.Middleware{
+		jsonrpc.LogMiddleware(&jsonrpc.LogOptions{
+			Logger:      log.StandardLogger(),
+			IncludeBody: true,
+		}),
+		jsonrpc.PanicMiddleware,
+	}
+
+	handler := jsonrpc.ApplyMiddlewares(srv.Handle, middlewares)
 	transport := jsonrpc.NewHTTP(handler)
 
 	mux := http.NewServeMux()

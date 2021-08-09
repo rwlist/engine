@@ -15,14 +15,14 @@ type Response struct {
 	Version string `json:"jsonrpc"`
 
 	// This member is REQUIRED on success.
-	Result Result `json:"result"`
+	Result Result `json:"result,omitempty"`
 
 	// This member is REQUIRED on error.
-	Error *Error `json:"error"`
+	Error *Error `json:"error,omitempty"`
 
 	// ID is an identifier established by the Client that MUST contain a String, Number,
 	// or NULL value if included.
-	ID ID `json:"id"`
+	ID ID `json:"id,omitempty"`
 }
 
 func (r *Response) validate() error {

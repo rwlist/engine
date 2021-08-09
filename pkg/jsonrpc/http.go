@@ -57,6 +57,8 @@ func (h *TransportHTTP) handleRequest(r *http.Request) Response {
 		return resp
 	}
 
+	// TODO: validate req.Version
+
 	// set header from request
 	req.Authorization = r.Header.Get("Authorization")
 
@@ -72,17 +74,12 @@ func (h *TransportHTTP) validateRequest(r *http.Request) bool {
 		return false
 	}
 
-	header := r.Header
-
-	if header.Get("Content-Type") != jsonContentType {
+	if r.Header.Get("Content-Type") != jsonContentType {
 		return false
 	}
 
 	// TODO: verify Content-Length
-
-	if header.Get("Accept") != jsonContentType {
-		return false
-	}
+	// TODO: Accept json
 
 	return true
 }

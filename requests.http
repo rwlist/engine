@@ -1,0 +1,9 @@
+POST localhost:8080/api
+Content-Type: application/json
+
+{
+  "method": "database.getAll",
+  "params": {
+    "hello": "there"
+  }
+}
