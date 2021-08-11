@@ -1,9 +1,105 @@
+### Create new database
 POST localhost:8080/api
 Content-Type: application/json
 
 {
-  "method": "database.getAll",
+  "method": "databases.create",
   "params": {
-    "hello": "there"
+    "Database": "test"
+  }
+}
+
+### Get all databases
+POST localhost:8080/api
+Content-Type: application/json
+
+{
+  "method": "databases.getAll",
+  "params": {}
+}
+
+### Drop database
+POST localhost:8080/api
+Content-Type: application/json
+
+{
+  "method": "databases.drop",
+  "params": {
+    "Database": "test"
+  }
+}
+
+### Get all lists
+POST localhost:8080/api
+Content-Type: application/json
+
+{
+  "method": "lists.getAll",
+  "params": {
+    "Database": "test"
+  }
+}
+
+### Create list
+POST localhost:8080/api
+Content-Type: application/json
+
+{
+  "method": "lists.create",
+  "params": {
+    "Database": "test",
+    "ListName": "notes",
+    "Engine": "dict"
+  }
+}
+
+### Drop list
+POST localhost:8080/api
+Content-Type: application/json
+
+{
+  "method": "lists.drop",
+  "params": {
+    "Database": "test",
+    "ListName": "notes"
+  }
+}
+
+### Insert entries to list
+POST localhost:8080/api
+Content-Type: application/json
+
+{
+  "method": "list.insertMany",
+  "params": {
+    "Database": "test",
+    "ListName": "notes",
+    "Entries": [
+      {
+        "_id": "note1",
+        "text": "hello everyone"
+      },
+      {
+        "_id": "note2",
+        "text": "hows weather?"
+      },
+      {
+        "_id": "note4",
+        "text": "bye"
+      }
+    ]
+  }
+}
+
+### Read all from list
+POST localhost:8080/api
+Content-Type: application/json
+
+{
+  "method": "list.readRange",
+  "params": {
+    "Database": "test",
+    "ListName": "notes",
+    "Limit": -1
   }
 }

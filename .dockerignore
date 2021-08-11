@@ -3,3 +3,4 @@
 .github
 Dockerfile
 docker-compose.yml
+temp_data

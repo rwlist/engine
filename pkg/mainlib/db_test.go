@@ -51,9 +51,7 @@ func TestDBSaveLoad(t *testing.T) {
 	assert.NoError(t, err)
 
 	dbName := "test"
-	db, err := dbms.CreateDatabase(adminUser, &domain.CreateDatabaseRequest{
-		Database: dbName,
-	})
+	db, err := dbms.CreateDatabase(adminUser, dbName)
 	assert.NoError(t, err)
 
 	listName := "sample_dict"

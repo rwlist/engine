@@ -8,7 +8,8 @@ type App struct {
 	PrometheusBind string `env:"PROMETHEUS_BIND" envDefault:":2112"`
 	ServerBind     string `env:"SERVER_BIND" envDefault:":8080"`
 
-	LogPayload bool `env:"LOG_PAYLOAD" envDefault:"false"`
+	DatabaseDir string `env:"DATABASE_DIR" envDefault:"rwdb"`
+	LogPayload  bool   `env:"LOG_PAYLOAD" envDefault:"false"`
 }
 
 func ParseEnv() (*App, error) {

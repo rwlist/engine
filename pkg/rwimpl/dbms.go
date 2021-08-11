@@ -52,21 +52,21 @@ func (d *DBMS) preloadAll() error {
 			continue
 		}
 
-		id := strings.TrimSuffix(filename, dbSuffix)
-		_, err = d.loadDB(id)
+		name := strings.TrimSuffix(filename, dbSuffix)
+		_, err = d.loadDB(name)
 		if err != nil {
 			log.WithError(err).Error("db not loaded on start")
 			continue
 		}
 
-		log.WithField("db", id).Info("db loaded on start")
+		log.WithField("db", name).Info("db loaded on start")
 	}
 
 	return nil
 }
 
-func (d *DBMS) loadDB(id string) (domain.Database, error) {
-	filename := id + dbSuffix
+func (d *DBMS) loadDB(name string) (domain.Database, error) {
+	filename := name + dbSuffix
 	boltDB, err := bbolt.Open(filepath.Join(d.dirPath, filename), dbMode, nil)
 	if err != nil {
 		return nil, err
@@ -74,11 +74,12 @@ func (d *DBMS) loadDB(id string) (domain.Database, error) {
 
 	ctx := &domain.DatabaseContext{
 		GlobalContext: d.globalCtx,
+		DatabaseName:  name,
 		Store:         boltDB,
 	}
 
 	db := NewDatabase(ctx)
-	d.loaded[id] = db
+	d.loaded[name] = db
 	return db, nil
 }
 
@@ -103,7 +104,7 @@ func (d *DBMS) AllDatabases(user *auth.User) ([]domain.Database, error) {
 	return res, nil
 }
 
-func (d *DBMS) CreateDatabase(user *auth.User, req *domain.CreateDatabaseRequest) (domain.Database, error) {
+func (d *DBMS) CreateDatabase(user *auth.User, dbName string) (domain.Database, error) {
 	if !user.IsAdmin {
 		return nil, domain.ErrAccessDenied
 	}
@@ -111,11 +112,11 @@ func (d *DBMS) CreateDatabase(user *auth.User, req *domain.CreateDatabaseRequest
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
 
-	if db := d.loaded[req.Database]; db != nil {
+	if db := d.loaded[dbName]; db != nil {
 		return nil, domain.ErrDatabaseExists
 	}
 
-	db, err := d.loadDB(req.Database)
+	db, err := d.loadDB(dbName)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +124,7 @@ func (d *DBMS) CreateDatabase(user *auth.User, req *domain.CreateDatabaseRequest
 	return db, nil
 }
 
-func (d *DBMS) DropDatabase(user *auth.User, req *domain.DropDatabaseRequest) error {
+func (d *DBMS) DropDatabase(user *auth.User, dbName string) error {
 	if !user.IsAdmin {
 		return domain.ErrAccessDenied
 	}
@@ -131,25 +132,25 @@ func (d *DBMS) DropDatabase(user *auth.User, req *domain.DropDatabaseRequest) er
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
 
-	db := d.loaded[req.Database]
+	db := d.loaded[dbName]
 	if db == nil {
 		return domain.ErrDatabaseNotFound
 	}
 
-	delete(d.loaded, req.Database)
+	delete(d.loaded, dbName)
 
 	return db.DropDatabase()
 }
 
-func (d *DBMS) Database(user *auth.User, id string) (domain.Database, error) {
-	if !user.IsAdmin && id != user.Username {
+func (d *DBMS) Database(user *auth.User, name string) (domain.Database, error) {
+	if !user.IsAdmin && name != user.Username {
 		return nil, domain.ErrAccessDenied
 	}
 
 	d.mutex.RLock()
 	defer d.mutex.RUnlock()
 
-	db := d.loaded[id]
+	db := d.loaded[name]
 	if db == nil {
 		return nil, domain.ErrDatabaseNotFound
 	}
@@ -161,10 +162,10 @@ func (d *DBMS) Close() error {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
 
-	for id, db := range d.loaded {
+	for name, db := range d.loaded {
 		err := db.Close()
 		if err != nil {
-			log.WithError(err).WithField("db", id).Warn("failed to close")
+			log.WithError(err).WithField("db", name).Warn("failed to close")
 		}
 	}
 

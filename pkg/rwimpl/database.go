@@ -40,7 +40,7 @@ func (d *Database) AllLists() ([]domain.ListInfo, error) {
 	return res, err
 }
 
-func (d *Database) CreateList(req *domain.CreateListRequest) (domain.ListInfo, error) {
+func (d *Database) CreateList(req *domain.CreateListRequest) (*domain.ListInfo, error) {
 	var info domain.ListInfo
 
 	err := d.store.Update(func(tx *bbolt.Tx) error {
@@ -53,12 +53,12 @@ func (d *Database) CreateList(req *domain.CreateListRequest) (domain.ListInfo, e
 		return nil
 	})
 
-	return info, err
+	return &info, err
 }
 
-func (d *Database) DropList(req *domain.DropListRequest) error {
+func (d *Database) DropList(listName string) error {
 	err := d.store.Update(func(tx *bbolt.Tx) error {
-		list, err := d.listByName(tx, req.ListName)
+		list, err := d.listByName(tx, listName)
 		if err != nil {
 			return err
 		}
@@ -71,7 +71,7 @@ func (d *Database) DropList(req *domain.DropListRequest) error {
 			}
 		}
 
-		return tx.DeleteBucket([]byte(req.ListName))
+		return tx.DeleteBucket([]byte(listName))
 	})
 
 	return err
@@ -144,6 +144,12 @@ func (d *Database) OpenList(name string, f func(domain.List) error) error {
 
 		return f(list)
 	})
+}
+
+func (d *Database) Info() (*domain.DatabaseInfo, error) {
+	return &domain.DatabaseInfo{
+		Name: d.ctx.DatabaseName,
+	}, nil
 }
 
 func (d *Database) DropDatabase() error {

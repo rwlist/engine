@@ -11,7 +11,8 @@ type GlobalContext struct {
 
 type DatabaseContext struct {
 	*GlobalContext
-	Store *bbolt.DB
+	DatabaseName string
+	Store        *bbolt.DB
 }
 
 type ListContext struct {

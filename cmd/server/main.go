@@ -1,6 +1,9 @@
 package main
 
 import (
+	"github.com/rwlist/engine/pkg/domain"
+	"github.com/rwlist/engine/pkg/mainlib"
+	"github.com/rwlist/engine/pkg/rwimpl"
 	"github.com/rwlist/engine/pkg/rwserv"
 	"net/http"
 
@@ -29,7 +32,17 @@ func main() {
 		}
 	}()
 
-	srv := &rwserv.Server{}
+	globalCtx := &domain.GlobalContext{
+		ListFactory: mainlib.StdFactory(),
+		DatabaseDir: cfg.DatabaseDir,
+	}
+
+	dbms, err := rwimpl.NewDBMS(globalCtx)
+	if err != nil {
+		log.WithError(err).Fatal("failed to init dbms")
+	}
+
+	srv := rwserv.NewServer(dbms)
 
 	middlewares := []jsonrpc.Middleware{
 		jsonrpc.LogMiddleware(&jsonrpc.LogOptions{
@@ -45,6 +58,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/api", transport)
 
+	log.WithField("bind", cfg.ServerBind).Info("server is starting")
 	err = http.ListenAndServe(cfg.ServerBind, mux)
 	log.WithError(err).Info("http server finished")
 }
